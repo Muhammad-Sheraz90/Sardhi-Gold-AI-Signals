@@ -1,5 +1,5 @@
 from telegram_bot import send_signal
-fr.  from market_data import get_gold_data 
+ from market_data import get_gold_data
 from strategy import check_signal
 import time
 
