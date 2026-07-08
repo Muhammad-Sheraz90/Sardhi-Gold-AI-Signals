@@ -9,7 +9,7 @@ def get_gold_data():
         symbol,
         period="1d",
         interval="15m",
-        progress=False
+        progress=False,
         threads=False
     )
 
