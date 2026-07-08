@@ -7,9 +7,10 @@ def get_gold_data():
 
     data = yf.download(
         symbol,
-        period="5d",
+        period="1d",
         interval="15m",
         progress=False
+        threads=False
     )
 
     data = data.dropna()
