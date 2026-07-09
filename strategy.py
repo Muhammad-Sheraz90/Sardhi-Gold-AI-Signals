@@ -5,9 +5,39 @@ def ema(series, period):
 
 def check_signal(data):
 
-    last = data.iloc[-1]
+    if len(data) < 200:
+        return None
 
-    return {
-        "type": "BUY",
-        "entry": round(last["close"], 2)
-    }
+    data["EMA50"] = ema(data["close"], 50)
+    data["EMA200"] = ema(data["close"], 200)
+
+    last = data.iloc[-1]
+    prev = data.iloc[-2]
+
+    # BUY Cross
+    if (
+        prev["EMA50"] <= prev["EMA200"] and
+        last["EMA50"] > last["EMA200"]
+    ):
+        return {
+            "type": "BUY",
+            "entry": round(last["close"], 2),
+            "sl": round(last["close"] - 10, 2),
+            "tp": round(last["close"] + 20, 2),
+            "confidence": 85
+        }
+
+    # SELL Cross
+    if (
+        prev["EMA50"] >= prev["EMA200"] and
+        last["EMA50"] < last["EMA200"]
+    ):
+        return {
+            "type": "SELL",
+            "entry": round(last["close"], 2),
+            "sl": round(last["close"] + 10, 2),
+            "tp": round(last["close"] - 20, 2),
+            "confidence": 85
+        }
+
+    return None
