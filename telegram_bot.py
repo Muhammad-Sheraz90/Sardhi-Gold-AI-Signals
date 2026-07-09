@@ -14,5 +14,8 @@ def send_signal(message):
 
     print(response.status_code)
     print(response.text)
+    print(response.status_code)
+    print(response.text)
+    print(response.json())
 
     return response.status_code == 200
