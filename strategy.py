@@ -52,7 +52,7 @@ def check_signal(data):
         last["EMA50"] > last["EMA200"]
         and last["close"] > last["EMA50"]
         and last["RSI"] > 55
-        and last["LiquidityBuy"]
+        and (last["LiquidityBuy"] or last["BOS_BUY"])
         and last["close"] >= last["SwingHigh"]
         and last["BOS_BUY"]
     ):
@@ -74,7 +74,7 @@ def check_signal(data):
         last["EMA50"] < last["EMA200"]
         and last["close"] < last["EMA50"]
         and last["RSI"] < 45
-        and last["LiquiditySell"]
+        and (last["LiquiditySell"] or last["BOS_SELL"])
         and last["close"] <= last["SwingLow"]
         and last["BOS_SELL"]
     ):
