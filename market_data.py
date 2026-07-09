@@ -21,6 +21,9 @@ def get_gold_data():
 
     df = pd.DataFrame(data["values"])
     df = df.iloc[::-1]          # oldest → newest
+    df["open"] = df["open"].astype(float)
+    df["high"] = df["high"].astype(float)
+    df["low"] = df["low"].astype(float)
     df["close"] = df["close"].astype(float)
 
     return df
