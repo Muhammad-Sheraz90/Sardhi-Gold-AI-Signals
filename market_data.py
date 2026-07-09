@@ -7,7 +7,7 @@ API_KEY = os.getenv("TWELVEDATA_API_KEY")
 def get_gold_data():
     url = (
         f"https://api.twelvedata.com/time_series"
-        f"?symbol=XAUUSD"
+        f"?symbol=XAU/USD"
         f"&interval=15min"
         f"&outputsize=200"
         f"&apikey={API_KEY}"
