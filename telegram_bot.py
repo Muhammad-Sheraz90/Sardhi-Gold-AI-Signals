@@ -12,4 +12,7 @@ def send_signal(message):
 
     response = requests.post(url, data=payload)
 
+    print(response.status_code)
+    print(response.text)
+
     return response.status_code == 200
