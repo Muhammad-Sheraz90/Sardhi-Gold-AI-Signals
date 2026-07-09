@@ -31,6 +31,8 @@ def check_signal(data):
     data["ATR"] = atr(data)
     data["SwingHigh"] = data["high"].rolling(5).max()
     data["SwingLow"] = data["low"].rolling(5).min()
+    data["BOS_BUY"] = data["close"] > data["SwingHigh"].shift(1)
+    data["BOS_SELL"] = data["close"] < data["SwingLow"].shift(1)
 
     last = data.iloc[-1]
     print("Close:", last["close"])
@@ -45,6 +47,7 @@ def check_signal(data):
         and last["close"] > last["EMA50"]
         and last["RSI"] > 55
         and last["close"] >= last["SwingHigh"]
+        and last["BOS_BUY"]
     ):
 
         entry = round(last["close"], 2)
@@ -65,6 +68,7 @@ def check_signal(data):
         and last["close"] < last["EMA50"]
         and last["RSI"] < 45
         and last["close"] <= last["SwingLow"]
+        and last["BOS_SELL"]
     ):
 
         entry = round(last["close"], 2)
