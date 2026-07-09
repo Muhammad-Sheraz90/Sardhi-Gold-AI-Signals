@@ -13,14 +13,14 @@ def check_signal(data):
 
     last = data.iloc[-1]
 
-    if last["EMA50"] > last["EMA200"] and last["Close"] > last["EMA200"]:
+    if last["EMA50"] > last["EMA200"] and last["close"] > last["EMA200"]:
 
         return {
             "type": "BUY",
             "entry": round(last["close"],2)
         }
 
-    if last["EMA50"] < last["EMA200"] and last["Close"] < last["EMA200"]:
+    if last["EMA50"] < last["EMA200"] and last["close"] < last["EMA200"]:
 
         return {
             "type": "SELL",
