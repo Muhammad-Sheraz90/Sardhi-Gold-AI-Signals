@@ -37,6 +37,10 @@ def check_signal(data):
     data["LiquiditySell"] = (data["high"] > data["SwingHigh"].shift(1)) & (data["close"] < data["SwingHigh"].shift(1))
 
     last = data.iloc[-1]
+    print("LiquidityBuy:", last["LiquidityBuy"])
+    print("LiquiditySell:", last["LiquiditySell"])
+    print("BOS_BUY:", last["BOS_BUY"])
+    print("BOS_SELL:", last["BOS_SELL"])
     print("Close:", last["close"])
     print("EMA50:", last["EMA50"])
     print("EMA200:", last["EMA200"])
