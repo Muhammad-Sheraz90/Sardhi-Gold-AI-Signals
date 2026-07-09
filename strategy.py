@@ -12,31 +12,28 @@ def check_signal(data):
     data["EMA200"] = ema(data["close"], 200)
 
     last = data.iloc[-1]
-    prev = data.iloc[-2]
 
-    # BUY Cross
-    if (
-        prev["EMA50"] <= prev["EMA200"] and
-        last["EMA50"] > last["EMA200"]
-    ):
+    if last["EMA50"] > last["EMA200"] and last["close"] > last["EMA200"]:
+
+        entry = round(last["close"], 2)
+
         return {
             "type": "BUY",
-            "entry": round(last["close"], 2),
-            "sl": round(last["close"] - 10, 2),
-            "tp": round(last["close"] + 20, 2),
+            "entry": entry,
+            "sl": round(entry - 8, 2),
+            "tp": round(entry + 16, 2),
             "confidence": 85
         }
 
-    # SELL Cross
-    if (
-        prev["EMA50"] >= prev["EMA200"] and
-        last["EMA50"] < last["EMA200"]
-    ):
+    if last["EMA50"] < last["EMA200"] and last["close"] < last["EMA200"]:
+
+        entry = round(last["close"], 2)
+
         return {
             "type": "SELL",
-            "entry": round(last["close"], 2),
-            "sl": round(last["close"] + 10, 2),
-            "tp": round(last["close"] - 20, 2),
+            "entry": entry,
+            "sl": round(entry + 8, 2),
+            "tp": round(entry - 16, 2),
             "confidence": 85
         }
 
