@@ -1,6 +1,7 @@
 from telegram_bot import send_signal 
 from market_data import get_gold_data
 from strategy import check_signal
+import time
 import traceback
 
 print("Sardhi Gold AI Bot Started...")
