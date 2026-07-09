@@ -14,7 +14,8 @@ while True:
         print("Checking signal...")
         signal = check_signal(data)
 
-        print(signal)
+        print(signal) 
+        print(data.tail())
 
         if signal:
             message = f"""
