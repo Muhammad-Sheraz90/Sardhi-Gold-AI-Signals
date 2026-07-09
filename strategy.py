@@ -29,6 +29,8 @@ def check_signal(data):
     data["EMA200"] = ema(data["close"], 200)
     data["RSI"] = rsi(data["close"])
     data["ATR"] = atr(data)
+    data["SwingHigh"] = data["high"].rolling(5).max()
+    data["SwingLow"] = data["low"].rolling(5).min()
 
     last = data.iloc[-1]
     print("Close:", last["close"])
@@ -42,6 +44,7 @@ def check_signal(data):
         last["EMA50"] > last["EMA200"]
         and last["close"] > last["EMA50"]
         and last["RSI"] > 55
+        and last["close"] >= last["SwingHigh"]
     ):
 
         entry = round(last["close"], 2)
@@ -61,6 +64,7 @@ def check_signal(data):
         last["EMA50"] < last["EMA200"]
         and last["close"] < last["EMA50"]
         and last["RSI"] < 45
+        and last["close"] <= last["SwingLow"]
     ):
 
         entry = round(last["close"], 2)
