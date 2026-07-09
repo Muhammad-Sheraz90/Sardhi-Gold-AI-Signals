@@ -28,12 +28,14 @@ def check_signal(data):
     data["EMA50"] = ema(data["close"], 50)
     data["EMA200"] = ema(data["close"], 200)
     data["RSI"] = rsi(data["close"])
+    data["ATR"] = atr(data)
 
     last = data.iloc[-1]
     print("Close:", last["close"])
     print("EMA50:", last["EMA50"])
     print("EMA200:", last["EMA200"])
     print("RSI:", last["RSI"])
+    print("ATR:", last["ATR"])
 
     # BUY
     if (
