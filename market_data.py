@@ -9,7 +9,7 @@ def get_gold_data():
         f"https://api.twelvedata.com/time_series"
         f"?symbol=XAU/USD"
         f"&interval=15min"
-        f"&outputsize=100"
+        f"&outputsize=200"
         f"&apikey={API_KEY}"
     )
 
