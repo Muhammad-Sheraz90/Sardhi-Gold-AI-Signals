@@ -15,8 +15,7 @@ while True:
         signal = check_signal(data)
 
         print(signal)
-        send_signal("✅ Telegram Test Message")
-        print("Test message sent")
+        
         print(data.tail())
 
         if signal:
