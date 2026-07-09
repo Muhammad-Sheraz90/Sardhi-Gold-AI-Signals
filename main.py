@@ -1,4 +1,4 @@
-from telegram_bot import send_signal 
+from telegram_bot import send_signal
 from market_data import get_gold_data
 from strategy import check_signal
 import time
@@ -8,17 +8,13 @@ print("Sardhi Gold AI Bot Started...")
 
 while True:
     try:
-        data = get_gold_data()
-        signal = check_signal(data) 
         print("Getting market data...")
+        data = get_gold_data()
 
+        print("Checking signal...")
+        signal = check_signal(data)
 
-print("Checking signal...")
-signal = check_signal(data)
-
-print(signal)
-
-
+        print(signal)
 
         if signal:
             message = f"""
@@ -30,17 +26,12 @@ Entry: {signal['entry']}
 
 ⚠️ Educational purposes only.
 """
+
             send_signal(message)
 
-        time.sleep(300)   # ہر 5 منٹ بعد چیک کرے گا
+        # ہر 5 منٹ بعد دوبارہ چیک کرے
+        time.sleep(300)
 
     except Exception as e:
-        
-
-    traceback.print_exc()
-
-    time.sleep(60)
-     print("Getting market data...")
-data = get_gold_data()
-
- 
+        traceback.print_exc()
+        time.sleep(60)
