@@ -21,7 +21,7 @@ def atr(data, period=14):
     return tr.rolling(period).mean()
 
 def check_signal(data):
-return {
+    return {
     "type": "BUY",
     "entry": 4120,
     "sl": 4110,
