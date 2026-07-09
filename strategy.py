@@ -33,6 +33,8 @@ def check_signal(data):
     data["SwingLow"] = data["low"].rolling(5).min()
     data["BOS_BUY"] = data["close"] > data["SwingHigh"].shift(1)
     data["BOS_SELL"] = data["close"] < data["SwingLow"].shift(1)
+    data["LiquidityBuy"] = (data["low"] < data["SwingLow"].shift(1)) & (data["close"] > data["SwingLow"].shift(1))
+    data["LiquiditySell"] = (data["high"] > data["SwingHigh"].shift(1)) & (data["close"] < data["SwingHigh"].shift(1))
 
     last = data.iloc[-1]
     print("Close:", last["close"])
@@ -46,6 +48,7 @@ def check_signal(data):
         last["EMA50"] > last["EMA200"]
         and last["close"] > last["EMA50"]
         and last["RSI"] > 55
+        and last["LiquidityBuy"]
         and last["close"] >= last["SwingHigh"]
         and last["BOS_BUY"]
     ):
@@ -67,6 +70,7 @@ def check_signal(data):
         last["EMA50"] < last["EMA200"]
         and last["close"] < last["EMA50"]
         and last["RSI"] < 45
+        and last["LiquiditySell"]
         and last["close"] <= last["SwingLow"]
         and last["BOS_SELL"]
     ):
