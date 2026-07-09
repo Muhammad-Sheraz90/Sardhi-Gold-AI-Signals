@@ -45,12 +45,14 @@ def check_signal(data):
     ):
 
         entry = round(last["close"], 2)
+        sl = round(entry - last["ATR"] * 1.5, 2)
+        tp = round(entry + last["ATR"] * 3, 2)
 
         return {
             "type": "BUY",
             "entry": entry,
             "sl": round(entry - 8, 2),
-            "tp": round(entry + 16, 2),
+            "tp": round(entry + 16, 2
             "confidence": 90
         }
 
@@ -62,12 +64,14 @@ def check_signal(data):
     ):
 
         entry = round(last["close"], 2)
-
+                        
+        sl = round(entry + last["ATR"] * 1.5, 2)
+        tp = round(entry - last["ATR"] * 3, 2)
         return {
             "type": "SELL",
             "entry": entry,
-            "sl": round(entry + 8, 2),
-            "tp": round(entry - 16, 2),
+            "sl": sl,
+            "tp": tp,
             "confidence": 90
         }
 
