@@ -1,18 +1,26 @@
-import yfinance as yf
+import os
+import requests
 import pandas as pd
 
+API_KEY = os.getenv("TWELVEDATA_API_KEY")
+
 def get_gold_data():
-
-    symbol = "GC=F"
-
-    data = yf.download(
-        symbol,
-        period="1d",
-        interval="15m",
-        progress=False,
-        threads=False
+    url = (
+        f"https://api.twelvedata.com/time_series"
+        f"?symbol=XAU/USD"
+        f"&interval=15min"
+        f"&outputsize=100"
+        f"&apikey={API_KEY}"
     )
 
-    data = data.dropna()
+    response = requests.get(url)
+    data = response.json()
 
-    return data
+    if "values" not in data:
+        raise Exception(data)
+
+    df = pd.DataFrame(data["values"])
+    df = df.iloc[::-1]          # oldest → newest
+    df["close"] = df["close"].astype(float)
+
+    return df
