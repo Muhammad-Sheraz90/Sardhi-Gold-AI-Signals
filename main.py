@@ -25,5 +25,9 @@ Entry: {signal['entry']}
         time.sleep(300)   # ہر 5 منٹ بعد چیک کرے گا
 
     except Exception as e:
-        print(e)
-        time.sleep(60)
+        import traceback
+
+    traceback.print_exc()
+
+    time.sleep(60)
+        
