@@ -21,13 +21,7 @@ def atr(data, period=14):
     return tr.rolling(period).mean()
 
 def check_signal(data):
-    return {
-    "type": "BUY",
-    "entry": 4120,
-    "sl": 4110,
-    "tp": 4150,
-    "confidence": 95
-}
+    
 
     if len(data) < 200:
         return None
@@ -61,7 +55,7 @@ def check_signal(data):
         and last["RSI"] > 55
         and (last["LiquidityBuy"] or last["BOS_BUY"])
         
-        and last["BOS_BUY"]
+        
     ):
 
         entry = round(last["close"], 2)
@@ -83,7 +77,7 @@ def check_signal(data):
         and last["RSI"] < 45
         and (last["LiquiditySell"] or last["BOS_SELL"])
         
-        and last["BOS_SELL"]
+        
     ):
 
         entry = round(last["close"], 2)
