@@ -51,8 +51,8 @@ def check_signal(data):
         return {
             "type": "BUY",
             "entry": entry,
-            "sl": round(entry - 8, 2),
-            "tp": round(entry + 16, 2
+            "sl": round(entry - last["ATR"] * 1.5, 2),
+            "tp": round(entry + last["ATR"] * 3, 2),
             "confidence": 90
         }
 
