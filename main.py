@@ -8,7 +8,16 @@ print("Sardhi Gold AI Bot Started...")
 while True:
     try:
         data = get_gold_data()
-        signal = check_signal(data)
+        signal = check_signal(data) 
+        print("Getting market data...")
+
+
+print("Checking signal...")
+signal = check_signal(data)
+
+print(signal)
+
+
 
         if signal:
             message = f"""
@@ -30,4 +39,7 @@ Entry: {signal['entry']}
     traceback.print_exc()
 
     time.sleep(60)
-        
+     print("Getting market data...")
+data = get_gold_data()
+
+ 
