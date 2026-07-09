@@ -58,7 +58,7 @@ def check_signal(data):
         
     ):
 
-        entry = round(last["close"], 2)
+        entry = float(round(last["close"], 2))
         sl = round(entry - last["ATR"] * 1.5, 2)
         tp = round(entry + last["ATR"] * 3, 2)
 
@@ -80,7 +80,7 @@ def check_signal(data):
         
     ):
 
-        entry = round(last["close"], 2)
+        entry = float(round(last["close"], 2))
                         
         sl = round(entry + last["ATR"] * 1.5, 2)
         tp = round(entry - last["ATR"] * 3, 2)
