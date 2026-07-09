@@ -17,5 +17,6 @@ def send_signal(message):
     print(response.status_code)
     print(response.text)
     print(response.json())
-
+    print("BOT_TOKEN =", BOT_TOKEN)
+    print("CHAT_ID =", CHAT_ID)
     return response.status_code == 200
