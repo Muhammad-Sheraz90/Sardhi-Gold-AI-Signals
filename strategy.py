@@ -30,6 +30,10 @@ def check_signal(data):
     data["RSI"] = rsi(data["close"])
 
     last = data.iloc[-1]
+    print("Close:", last["close"])
+    print("EMA50:", last["EMA50"])
+    print("EMA200:", last["EMA200"])
+    print("RSI:", last["RSI"])
 
     # BUY
     if (
