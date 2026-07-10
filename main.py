@@ -15,11 +15,13 @@ while True:
         signal = check_signal(data)
 
         print(signal)
+
         if signal is None:
-    print("No signal found.")
-else:
-    print("Signal found:", signal) 
-print(data.tail())
+            print("No signal found.")
+        else:
+            print("Signal found:", signal)
+
+        print(data.tail())
 
         if signal:
             message = f"""
@@ -42,7 +44,7 @@ print(data.tail())
 
             send_signal(message)
 
-        # ہر 5 منٹ بعد دوبارہ چیک کرے
+        # Check again after 5 minutes
         time.sleep(300)
 
     except Exception as e:
