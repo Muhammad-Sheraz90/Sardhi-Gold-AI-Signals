@@ -74,7 +74,8 @@ def check_signal(data):
     if (
         last["EMA50"] < last["EMA200"]
         and last["close"] < last["EMA50"]
-        and last["RSI"] < 45
+        and 30 < last["RSI"] < 45
+        and last["ATR"] > 5
         and (last["LiquiditySell"] or last["BOS_SELL"])
         
         
