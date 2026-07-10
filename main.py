@@ -15,8 +15,11 @@ while True:
         signal = check_signal(data)
 
         print(signal)
-        
-        print(data.tail())
+        if signal is None:
+    print("No signal found.")
+else:
+    print("Signal found:", signal) 
+print(data.tail())
 
         if signal:
             message = f"""
