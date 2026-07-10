@@ -48,47 +48,47 @@ def check_signal(data):
     print("RSI:", last["RSI"])
     print("ATR:", last["ATR"])
 
- # BUY
-if (
-    last["EMA50"] > last["EMA200"]
-    and last["close"] > last["EMA50"]
-    and 55 < last["RSI"] < 70
-    and last["ATR"] > 5
-    and last["BOS_BUY"]
-):
+        # BUY
+    if (
+    
+        last["EMA50"] > last["EMA200"]
+        and last["close"] > last["EMA50"]
+        and 55 < last["RSI"] < 70
+        and last["ATR"] > 5
+        and last["BOS_BUY"]
+    ):
 
-    entry = float(round(last["close"], 2))
-    sl = round(last["SwingLow"], 2)
-    tp = round(entry + ((entry - sl) * 2), 2)
+        entry = float(round(last["close"], 2))
+        sl = round(last["SwingLow"], 2)
+        tp = round(entry + ((entry - sl) * 2), 2)
 
-    return {
-        "type": "BUY",
-        "entry": entry,
-        "sl": sl,
-        "tp": tp,
-        "confidence": 92
-    }
+        return {
+            "type": "BUY",
+            "entry": entry,
+            "sl": sl,
+            "tp": tp,
+            "confidence": 92
+        }
 
+    # SELL
+    if (
+        last["EMA50"] < last["EMA200"]
+        and last["close"] < last["EMA50"]
+        and 30 < last["RSI"] < 45
+        and last["ATR"] > 5
+        and last["BOS_SELL"]
+    ):
 
-# SELL
-if (
-    last["EMA50"] < last["EMA200"]
-    and last["close"] < last["EMA50"]
-    and 30 < last["RSI"] < 45
-    and last["ATR"] > 5
-    and last["BOS_SELL"]
-):
+        entry = float(round(last["close"], 2))
+        sl = round(last["SwingHigh"], 2)
+        tp = round(entry - ((sl - entry) * 2), 2)
 
-    entry = float(round(last["close"], 2))
-    sl = round(last["SwingHigh"], 2)
-    tp = round(entry - ((sl - entry) * 2), 2)
-
-    return {
-        "type": "SELL",
-        "entry": entry,
-        "sl": sl,
-        "tp": tp,
-        "confidence": 92
-    }
+        return {
+            "type": "SELL",
+            "entry": entry,
+            "sl": sl,
+            "tp": tp,
+            "confidence": 92
+        }
 
     return None
