@@ -1,29 +1,46 @@
-import os
 import requests
 import pandas as pd
+from config import TWELVEDATA_API_KEY
 
-API_KEY = os.getenv("TWELVEDATA_API_KEY")
+SYMBOL = "XAU/USD"
+INTERVAL = "15min"
+
 
 def get_gold_data():
+
     url = (
-        f"https://api.twelvedata.com/time_series"
-        f"?symbol=XAU/USD"
-        f"&interval=15min"
-        f"&outputsize=200"
-        f"&apikey={API_KEY}"
+        "https://api.twelvedata.com/time_series"
+        f"?symbol={SYMBOL}"
+        f"&interval={INTERVAL}"
+        "&outputsize=500"
+        "&timezone=UTC"
+        f"&apikey={TWELVEDATA_API_KEY}"
     )
 
-    response = requests.get(url)
+    response = requests.get(url, timeout=30)
     data = response.json()
 
     if "values" not in data:
         raise Exception(data)
 
     df = pd.DataFrame(data["values"])
-    df = df.iloc[::-1]          # oldest → newest
-    df["open"] = df["open"].astype(float)
-    df["high"] = df["high"].astype(float)
-    df["low"] = df["low"].astype(float)
-    df["close"] = df["close"].astype(float)
+
+    df = df.rename(
+        columns={
+            "datetime": "datetime",
+            "open": "open",
+            "high": "high",
+            "low": "low",
+            "close": "close",
+            "volume": "volume",
+        }
+    )
+
+    df["datetime"] = pd.to_datetime(df["datetime"])
+
+    for col in ["open", "high", "low", "close"]:
+        df[col] = df[col].astype(float)
+
+    df = df.sort_values("datetime").reset_index(drop=True)
 
     return df
