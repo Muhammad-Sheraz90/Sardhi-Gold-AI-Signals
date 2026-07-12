@@ -34,30 +34,37 @@ def detect_swings(data):
     data["SwingLow"] = data["SwingLow"].ffill()
 
     return data
-
-
 def detect_liquidity(data):
 
     data["BuyLiquidity"] = False
     data["SellLiquidity"] = False
 
+    previous_high = data["SwingHigh"].shift(1)
+    previous_low = data["SwingLow"].shift(1)
+
     for i in range(1, len(data)):
 
+        if pd.isna(previous_high.iloc[i]) or pd.isna(previous_low.iloc[i]):
+            continue
+
+        # Buy-side Liquidity Sweep
         if (
-            data["high"].iloc[i] > data["SwingHigh"].iloc[i]
+            data["high"].iloc[i] > previous_high.iloc[i]
             and
-            data["close"].iloc[i] < data["SwingHigh"].iloc[i]
+            data["close"].iloc[i] < previous_high.iloc[i]
         ):
             data.loc[data.index[i], "BuyLiquidity"] = True
 
+        # Sell-side Liquidity Sweep
         if (
-            data["low"].iloc[i] < data["SwingLow"].iloc[i]
+            data["low"].iloc[i] < previous_low.iloc[i]
             and
-            data["close"].iloc[i] > data["SwingLow"].iloc[i]
+            data["close"].iloc[i] > previous_low.iloc[i]
         ):
             data.loc[data.index[i], "SellLiquidity"] = True
-
     return data
+
+
 
 
 def detect_choch(data):
