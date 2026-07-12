@@ -83,7 +83,13 @@ def detect_choch(data):
     return data
 
 
+# ==========================================================
+# FAIR VALUE GAP (ICT)
+# ==========================================================
+
 def detect_fvg(data):
+
+    data = data.copy()
 
     data["BullishFVG"] = False
     data["BearishFVG"] = False
@@ -93,17 +99,33 @@ def detect_fvg(data):
 
     for i in range(2, len(data)):
 
-        if data["low"].iloc[i] > data["high"].iloc[i-2]:
+        high_2 = data["high"].iloc[i-2]
+        low_2 = data["low"].iloc[i-2]
 
-            data.loc[data.index[i], "BullishFVG"] = True
-            data.loc[data.index[i], "FVGLow"] = data["high"].iloc[i-2]
-            data.loc[data.index[i], "FVGHigh"] = data["low"].iloc[i]
+        high = data["high"].iloc[i]
+        low = data["low"].iloc[i]
 
-        if data["high"].iloc[i] < data["low"].iloc[i-2]:
+        # Bullish FVG
+        if low > high_2:
 
-            data.loc[data.index[i], "BearishFVG"] = True
-            data.loc[data.index[i], "FVGHigh"] = data["low"].iloc[i-2]
-            data.loc[data.index[i], "FVGLow"] = data["high"].iloc[i]
+            gap = low - high_2
+
+            if gap > 0.02:
+
+                data.loc[data.index[i], "BullishFVG"] = True
+                data.loc[data.index[i], "FVGLow"] = high_2
+                data.loc[data.index[i], "FVGHigh"] = low
+
+        # Bearish FVG
+        elif high < low_2:
+
+            gap = low_2 - high
+
+            if gap > 0.02:
+
+                data.loc[data.index[i], "BearishFVG"] = True
+                data.loc[data.index[i], "FVGHigh"] = low_2
+                data.loc[data.index[i], "FVGLow"] = high
 
     return data
     # ==========================================================
