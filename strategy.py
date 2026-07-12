@@ -71,7 +71,7 @@ def prepare_structure(data, lookback=20):
 
 
 def check_signal(data):
-    if data is None or len(data) < 220:
+    if data is None or len(data) < 200:
         return None
 
     data = prepare_data(data)
