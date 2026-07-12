@@ -3,7 +3,7 @@ import pandas as pd
 from config import TWELVEDATA_API_KEY
 
 SYMBOL = "XAU/USD"
-INTERVAL = "15min"
+INTERVAL = "5min"
 
 
 def get_gold_data():
