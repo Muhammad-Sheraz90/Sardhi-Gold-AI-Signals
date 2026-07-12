@@ -79,18 +79,18 @@ def check_signal(data):
 
     last = data.iloc[-2]
     print("\n========== DEBUG ==========")
-print("Close:", last["close"])
-print("EMA50:", last["EMA50"])
-print("EMA200:", last["EMA200"])
-print("RSI:", last["RSI"])
-print("ATR:", last["ATR"])
-print("BullishBOS:", last["BullishBOS"])
-print("BearishBOS:", last["BearishBOS"])
-print("LiquidityBuy:", last["LiquidityBuy"])
-print("LiquiditySell:", last["LiquiditySell"])
-print("===========================\n")
+    print("Close:", last["close"])
+    print("EMA50:", last["EMA50"])
+    print("EMA200:", last["EMA200"])
+    print("RSI:", last["RSI"])
+    print("ATR:", last["ATR"])
+    print("BullishBOS:", last["BullishBOS"])
+    print("BearishBOS:", last["BearishBOS"])
+    print("LiquidityBuy:", last["LiquidityBuy"])
+    print("LiquiditySell:", last["LiquiditySell"])
+    print("===========================\n")
 
-buy = (
+    buy = (
         last["EMA50"] > last["EMA200"]
         and last["BullishBOS"]
         and last["LiquidityBuy"]
