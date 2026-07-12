@@ -247,22 +247,21 @@ def check_signal(data):
         print("Index:", i)
         print("BuyLiquidity:", last["BuyLiquidity"])
         print("SellLiquidity:", last["SellLiquidity"])
-        print("BullishCHOCH:", last["BullishCHOCH"])
+                print("BullishCHOCH:", last["BullishCHOCH"])
         print("BearishCHOCH:", last["BearishCHOCH"])
         print("BullishFVG:", last["BullishFVG"])
         print("BearishFVG:", last["BearishFVG"])
 
-    if last["SellLiquidity"] and last["BullishCHOCH"]:
-    signal = create_signal(last, "BUY")
+        if last["SellLiquidity"] and last["BullishCHOCH"]:
+            signal = create_signal(last, "BUY")
 
-    elif last["BuyLiquidity"] and last["BearishCHOCH"]:
-    signal = create_signal(last, "SELL")
+        elif last["BuyLiquidity"] and last["BearishCHOCH"]:
+            signal = create_signal(last, "SELL")
 
-    if signal:
-        return signal
+        if signal:
+            return signal
 
     return None
-
 
 # ==========================================================
 # TELEGRAM MESSAGE
