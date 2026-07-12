@@ -152,8 +152,8 @@ def buy_setup(last):
         last["SellLiquidity"]
         and
         last["BullishCHOCH"]
-        and
-        last["BullishFVG"]
+        
+        
     )
 
 
@@ -167,8 +167,8 @@ def sell_setup(last):
         last["BuyLiquidity"]
         and
         last["BearishCHOCH"]
-        and
-        last["BearishFVG"]
+        
+        
     )
 
 
