@@ -252,11 +252,11 @@ def check_signal(data):
         print("BullishFVG:", last["BullishFVG"])
         print("BearishFVG:", last["BearishFVG"])
 
-        if buy_setup(last):
-            signal = create_signal(last, "BUY")
+        if last["SellLiquidity"] and last["BullishCHOCH"]:
+    signal = create_signal(last, "BUY")
 
-        elif sell_setup(last):
-            signal = create_signal(last, "SELL")
+elif last["BuyLiquidity"] and last["BearishCHOCH"]:
+    signal = create_signal(last, "SELL")
 
     if signal:
         return signal
