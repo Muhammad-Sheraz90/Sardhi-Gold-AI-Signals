@@ -1,117 +1,278 @@
-"""
-Sardhi Gold AI V2
-strategy.py (Starter Version)
-
-NOTE:
-This file is a merged starter based on the strategy discussed in chat.
-It is intended as a foundation and should be integrated with the rest of
-the project (market_data.py, main.py, telegram_bot.py).
-"""
+# ==========================================================
+# Sardhi Gold AI V3
+# ICT Strategy
+# ==========================================================
 
 import pandas as pd
+import numpy as np
 
 
-def ema(series, period):
-    return series.ewm(span=period, adjust=False).mean()
+SWING_LOOKBACK = 5
+RR = 2.0
 
 
-def rsi(series, period=14):
-    delta = series.diff()
-    gain = delta.clip(lower=0)
-    loss = -delta.clip(upper=0)
-    avg_gain = gain.ewm(alpha=1/period, adjust=False).mean()
-    avg_loss = loss.ewm(alpha=1/period, adjust=False).mean()
-    rs = avg_gain / avg_loss
-    return 100 - (100 / (1 + rs))
+def detect_swings(data):
 
-
-def atr(data, period=14):
-    high_low = data["high"] - data["low"]
-    high_close = (data["high"] - data["close"].shift(1)).abs()
-    low_close = (data["low"] - data["close"].shift(1)).abs()
-    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
-    return tr.ewm(alpha=1/period, adjust=False).mean()
-
-
-def prepare_data(data):
     data = data.copy()
-    data["EMA50"] = ema(data["close"], 50)
-    data["EMA200"] = ema(data["close"], 200)
-    data["RSI"] = rsi(data["close"], 14)
-    data["ATR"] = atr(data, 14)
-    data.dropna(inplace=True)
+
+    data["SwingHigh"] = np.nan
+    data["SwingLow"] = np.nan
+
+    for i in range(SWING_LOOKBACK, len(data) - SWING_LOOKBACK):
+
+        if data["high"].iloc[i] == max(
+            data["high"].iloc[i-SWING_LOOKBACK:i+SWING_LOOKBACK+1]
+        ):
+            data.loc[data.index[i], "SwingHigh"] = data["high"].iloc[i]
+
+        if data["low"].iloc[i] == min(
+            data["low"].iloc[i-SWING_LOOKBACK:i+SWING_LOOKBACK+1]
+        ):
+            data.loc[data.index[i], "SwingLow"] = data["low"].iloc[i]
+
+    data["SwingHigh"] = data["SwingHigh"].ffill()
+    data["SwingLow"] = data["SwingLow"].ffill()
+
     return data
 
 
-def prepare_structure(data, lookback=20):
-    data = data.copy()
-    data["SwingHigh"] = data["high"].rolling(lookback).max().shift(1)
-    data["SwingLow"] = data["low"].rolling(lookback).min().shift(1)
+def detect_liquidity(data):
 
-    buffer = data["ATR"] * 0.10
-    data["BullishBOS"] = data["close"] > data["SwingHigh"] 
-    data["BearishBOS"] = data["close"] < data["SwingLow"] 
+    data["BuyLiquidity"] = False
+    data["SellLiquidity"] = False
 
-    rng = (data["high"] - data["low"]).replace(0, 1e-6)
-    body = (data["close"] - data["open"]).abs()
-    ratio = body / rng
+    for i in range(1, len(data)):
 
-    data["LiquidityBuy"] = (
-        (data["low"] < data["SwingLow"])
-        & (data["close"] > data["SwingLow"])
-        & (ratio >= 0.20)
-    )
+        if (
+            data["high"].iloc[i] > data["SwingHigh"].iloc[i]
+            and
+            data["close"].iloc[i] < data["SwingHigh"].iloc[i]
+        ):
+            data.loc[data.index[i], "BuyLiquidity"] = True
 
-    data["LiquiditySell"] = (
-        (data["high"] > data["SwingHigh"])
-        & (data["close"] < data["SwingHigh"])
-        & (ratio >= 0.20)
-    )
+        if (
+            data["low"].iloc[i] < data["SwingLow"].iloc[i]
+            and
+            data["close"].iloc[i] > data["SwingLow"].iloc[i]
+        ):
+            data.loc[data.index[i], "SellLiquidity"] = True
+
     return data
 
+
+def detect_choch(data):
+
+    data["BullishCHOCH"] = False
+    data["BearishCHOCH"] = False
+
+    for i in range(1, len(data)):
+
+        if data["close"].iloc[i] > data["high"].iloc[i-1]:
+            data.loc[data.index[i], "BullishCHOCH"] = True
+
+        if data["close"].iloc[i] < data["low"].iloc[i-1]:
+            data.loc[data.index[i], "BearishCHOCH"] = True
+
+    return data
+
+
+def detect_fvg(data):
+
+    data["BullishFVG"] = False
+    data["BearishFVG"] = False
+
+    data["FVGHigh"] = np.nan
+    data["FVGLow"] = np.nan
+
+    for i in range(2, len(data)):
+
+        if data["low"].iloc[i] > data["high"].iloc[i-2]:
+
+            data.loc[data.index[i], "BullishFVG"] = True
+            data.loc[data.index[i], "FVGLow"] = data["high"].iloc[i-2]
+            data.loc[data.index[i], "FVGHigh"] = data["low"].iloc[i]
+
+        if data["high"].iloc[i] < data["low"].iloc[i-2]:
+
+            data.loc[data.index[i], "BearishFVG"] = True
+            data.loc[data.index[i], "FVGHigh"] = data["low"].iloc[i-2]
+            data.loc[data.index[i], "FVGLow"] = data["high"].iloc[i]
+
+    return data
+    # ==========================================================
+# PREPARE ICT
+# ==========================================================
+
+def prepare_ict(data):
+
+    data = detect_swings(data)
+    data = detect_liquidity(data)
+    data = detect_choch(data)
+    data = detect_fvg(data)
+
+    return data
+
+
+# ==========================================================
+# BUY SETUP
+# ==========================================================
+
+def buy_setup(last):
+
+    return (
+        last["SellLiquidity"]
+        and
+        last["BullishCHOCH"]
+        and
+        last["BullishFVG"]
+    )
+
+
+# ==========================================================
+# SELL SETUP
+# ==========================================================
+
+def sell_setup(last):
+
+    return (
+        last["BuyLiquidity"]
+        and
+        last["BearishCHOCH"]
+        and
+        last["BearishFVG"]
+    )
+
+
+# ==========================================================
+# STOP LOSS
+# ==========================================================
+
+def stop_loss(last, signal):
+
+    if signal == "BUY":
+        return round(last["low"], 2)
+
+    return round(last["high"], 2)
+
+
+# ==========================================================
+# TAKE PROFIT
+# ==========================================================
+
+def take_profit(entry, sl, signal):
+
+    risk = abs(entry - sl)
+
+    if signal == "BUY":
+        tp = entry + (risk * RR)
+
+    else:
+        tp = entry - (risk * RR)
+
+    return round(tp, 2)
+
+
+# ==========================================================
+# CREATE SIGNAL
+# ==========================================================
+
+def create_signal(last, signal):
+
+    entry = round(last["close"], 2)
+
+    sl = stop_loss(last, signal)
+
+    tp = take_profit(entry, sl, signal)
+
+    return {
+
+        "signal": signal,
+
+        "entry": entry,
+
+        "sl": sl,
+
+        "tp": tp
+
+    }
+    # ==========================================================
+# CHECK SIGNAL
+# ==========================================================
 
 def check_signal(data):
-    if data is None or len(data) < 200:
+
+    if data is None:
         return None
 
-    data = prepare_data(data)
-    data = prepare_structure(data)
+    if len(data) < 50:
+        return None
+
+    data = prepare_ict(data)
 
     last = data.iloc[-2]
-    print("\n========== DEBUG ==========")
+
+    print("\n========== ICT DEBUG ==========")
     print("Close:", last["close"])
-    print("EMA50:", last["EMA50"])
-    print("EMA200:", last["EMA200"])
-    print("RSI:", last["RSI"])
-    print("ATR:", last["ATR"])
     print("SwingHigh:", last["SwingHigh"])
     print("SwingLow:", last["SwingLow"])
-    print("High:", last["high"])
-    print("Low:", last["low"])
-    print("BullishBOS:", last["BullishBOS"])
-    print("BearishBOS:", last["BearishBOS"])
-    print("LiquidityBuy:", last["LiquidityBuy"])
-    print("LiquiditySell:", last["LiquiditySell"])
-    print("===========================\n")
+    print("BuyLiquidity:", last["BuyLiquidity"])
+    print("SellLiquidity:", last["SellLiquidity"])
+    print("BullishCHOCH:", last["BullishCHOCH"])
+    print("BearishCHOCH:", last["BearishCHOCH"])
+    print("BullishFVG:", last["BullishFVG"])
+    print("BearishFVG:", last["BearishFVG"])
+    print("===============================\n")
 
-    buy = (
-        last["EMA50"] > last["EMA200"]
-        and last["BullishBOS"]
-        and last["LiquidityBuy"]
-        and 50 <= last["RSI"] <= 70
-    )
+    if buy_setup(last):
 
-    sell = (
-        last["EMA50"] < last["EMA200"]
-        and last["BearishBOS"]
-        and last["LiquiditySell"]
-        and 30 <= last["RSI"] <= 50
-    )
+        signal = create_signal(last, "BUY")
 
-    if buy:
-        return {"type": "BUY", "entry": round(last["close"],2)}
+        return signal
 
-    if sell:
-        return {"type": "SELL", "entry": round(last["close"],2)}
+    if sell_setup(last):
+
+        signal = create_signal(last, "SELL")
+
+        return signal
 
     return None
+
+
+# ==========================================================
+# TELEGRAM MESSAGE
+# ==========================================================
+
+def format_signal(signal):
+
+    if signal is None:
+        return None
+
+    message = f"""
+🟢 Sardhi Gold AI V3
+
+Signal : {signal['signal']}
+
+Entry : {signal['entry']}
+
+Stop Loss : {signal['sl']}
+
+Take Profit : {signal['tp']}
+
+Strategy :
+ICT Liquidity Sweep
++
+CHOCH
++
+FVG
+"""
+
+    return message
+
+
+# ==========================================================
+# TEST
+# ==========================================================
+
+if __name__ == "__main__":
+
+    print("ICT Strategy Loaded Successfully")
