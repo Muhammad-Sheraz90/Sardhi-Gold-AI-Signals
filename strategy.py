@@ -34,34 +34,34 @@ def detect_swings(data):
     data["SwingLow"] = data["SwingLow"].ffill()
 
     return data
+# ==========================================================
+# LIQUIDITY SWEEP (ICT)
+# ==========================================================
+
 def detect_liquidity(data):
+
+    data = data.copy()
 
     data["BuyLiquidity"] = False
     data["SellLiquidity"] = False
 
-    previous_high = data["SwingHigh"].shift(1)
-    previous_low = data["SwingLow"].shift(1)
+    for i in range(10, len(data)):
 
-    for i in range(1, len(data)):
+        swing_high = data["high"].iloc[i-10:i].max()
+        swing_low = data["low"].iloc[i-10:i].min()
 
-        if pd.isna(previous_high.iloc[i]) or pd.isna(previous_low.iloc[i]):
-            continue
+        high = data["high"].iloc[i]
+        low = data["low"].iloc[i]
+        close = data["close"].iloc[i]
 
-        # Buy-side Liquidity Sweep
-        if (
-            data["high"].iloc[i] > previous_high.iloc[i]
-            and
-            data["close"].iloc[i] < previous_high.iloc[i]
-        ):
+        # BUY SIDE LIQUIDITY SWEEP
+        if high > swing_high and close < swing_high:
             data.loc[data.index[i], "BuyLiquidity"] = True
 
-        # Sell-side Liquidity Sweep
-        if (
-            data["low"].iloc[i] < previous_low.iloc[i]
-            and
-            data["close"].iloc[i] > previous_low.iloc[i]
-        ):
+        # SELL SIDE LIQUIDITY SWEEP
+        if low < swing_low and close > swing_low:
             data.loc[data.index[i], "SellLiquidity"] = True
+
     return data
 
 
