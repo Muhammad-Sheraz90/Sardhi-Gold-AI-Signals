@@ -255,7 +255,7 @@ def check_signal(data):
         if last["SellLiquidity"] and last["BullishCHOCH"]:
     signal = create_signal(last, "BUY")
 
-elif last["BuyLiquidity"] and last["BearishCHOCH"]:
+    elif last["BuyLiquidity"] and last["BearishCHOCH"]:
     signal = create_signal(last, "SELL")
 
     if signal:
