@@ -46,4 +46,4 @@ def get_gold_data():
 print(df.tail(10))
 print(df["high"].tail(10).tolist())
 print(df["low"].tail(10).tolist())
-    return df
+return df
