@@ -247,7 +247,7 @@ def check_signal(data):
         print("Index:", i)
         print("BuyLiquidity:", last["BuyLiquidity"])
         print("SellLiquidity:", last["SellLiquidity"])
-                print("BullishCHOCH:", last["BullishCHOCH"])
+        print("BullishCHOCH:", last["BullishCHOCH"])
         print("BearishCHOCH:", last["BearishCHOCH"])
         print("BullishFVG:", last["BullishFVG"])
         print("BearishFVG:", last["BearishFVG"])
