@@ -206,41 +206,22 @@ def create_signal(last, signal):
 # CHECK SIGNAL
 # ==========================================================
 
-def check_signal(data):
+signal = None
 
-    if data is None:
-        return None
+for i in range(len(data) - 20, len(data) - 1):
 
-    if len(data) < 50:
-        return None
-
-    data = prepare_ict(data)
-
-    last = data.iloc[-2]
-
-    print("\n========== ICT DEBUG ==========")
-    print("Close:", last["close"])
-    print("SwingHigh:", last["SwingHigh"])
-    print("SwingLow:", last["SwingLow"])
-    print("BuyLiquidity:", last["BuyLiquidity"])
-    print("SellLiquidity:", last["SellLiquidity"])
-    print("BullishCHOCH:", last["BullishCHOCH"])
-    print("BearishCHOCH:", last["BearishCHOCH"])
-    print("BullishFVG:", last["BullishFVG"])
-    print("BearishFVG:", last["BearishFVG"])
-    print("===============================\n")
+    last = data.iloc[i]
 
     if buy_setup(last):
-
         signal = create_signal(last, "BUY")
 
-        return signal
-
-    if sell_setup(last):
-
+    elif sell_setup(last):
         signal = create_signal(last, "SELL")
 
-        return signal
+if signal:
+    return signal
+
+last = data.iloc[-2]
 
     return None
 
