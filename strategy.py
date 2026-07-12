@@ -90,7 +90,7 @@ print("LiquidityBuy:", last["LiquidityBuy"])
 print("LiquiditySell:", last["LiquiditySell"])
 print("===========================\n")
 
-    buy = (
+buy = (
         last["EMA50"] > last["EMA200"]
         and last["BullishBOS"]
         and last["LiquidityBuy"]
