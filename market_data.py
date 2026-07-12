@@ -43,7 +43,5 @@ def get_gold_data():
         df[col] = df[col].astype(float)
 
     df = df.sort_values("datetime").reset_index(drop=True)
-print(df.tail(10))
-print(df["high"].tail(10).tolist())
-print(df["low"].tail(10).tolist())
-return df
+
+    return df
