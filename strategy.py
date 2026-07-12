@@ -206,22 +206,30 @@ def create_signal(last, signal):
 # CHECK SIGNAL
 # ==========================================================
 
-signal = None
+def check_signal(data):
 
-for i in range(len(data) - 20, len(data) - 1):
+    if data is None:
+        return None
 
-    last = data.iloc[i]
+    if len(data) < 50:
+        return None
 
-    if buy_setup(last):
-        signal = create_signal(last, "BUY")
+    data = prepare_ict(data)
 
-    elif sell_setup(last):
-        signal = create_signal(last, "SELL")
+    signal = None
 
-if signal:
-    return signal
+    for i in range(max(0, len(data) - 20), len(data) - 1):
 
-last = data.iloc[-2]
+        last = data.iloc[i]
+
+        if buy_setup(last):
+            signal = create_signal(last, "BUY")
+
+        elif sell_setup(last):
+            signal = create_signal(last, "SELL")
+
+    if signal:
+        return signal
 
     return None
 
