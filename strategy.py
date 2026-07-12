@@ -221,24 +221,14 @@ def check_signal(data):
     for i in range(max(0, len(data) - 20), len(data) - 1):
 
         last = data.iloc[i]
-        for i in range(max(0, len(data) - 20), len(data) - 1):
-
-    last = data.iloc[i]
-
-    print("--------------")
-    print("Index:", i)
-    print("BuyLiquidity:", last["BuyLiquidity"])
-    print("SellLiquidity:", last["SellLiquidity"])
-    print("BullishCHOCH:", last["BullishCHOCH"])
-    print("BearishCHOCH:", last["BearishCHOCH"])
-    print("BullishFVG:", last["BullishFVG"])
-    print("BearishFVG:", last["BearishFVG"])
-
-    if buy_setup(last):
-        signal = create_signal(last, "BUY")
-
-    elif sell_setup(last):
-        signal = create_signal(last, "SELL")
+        print("--------------")
+        print("Index:", i)
+        print("BuyLiquidity:", last["BuyLiquidity"])
+        print("SellLiquidity:", last["SellLiquidity"])
+        print("BullishCHOCH:", last["BullishCHOCH"])
+        print("BearishCHOCH:", last["BearishCHOCH"])
+        print("BullishFVG:", last["BullishFVG"])
+        print("BearishFVG:", last["BearishFVG"])
 
         if buy_setup(last):
             signal = create_signal(last, "BUY")
