@@ -49,8 +49,8 @@ def prepare_structure(data, lookback=20):
     data["SwingLow"] = data["low"].rolling(lookback).min().shift(1)
 
     buffer = data["ATR"] * 0.10
-    data["BullishBOS"] = data["close"] > (data["SwingHigh"] 
-    data["BearishBOS"] = data["close"] < (data["SwingLow"] 
+    data["BullishBOS"] = data["close"] > data["SwingHigh"] 
+    data["BearishBOS"] = data["close"] < data["SwingLow"] 
 
     rng = (data["high"] - data["low"]).replace(0, 1e-6)
     body = (data["close"] - data["open"]).abs()
