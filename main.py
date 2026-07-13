@@ -223,3 +223,6 @@ while True:
         print("An error occurred:")
         traceback.print_exc()
         time.sleep(30)
+        # ٹیسٹ میسج بھیجنے کے لیے الرٹ لائن
+send_signal("🚀 *Sardhi Gold AI Bot: Connection Test Successful!*")
+
