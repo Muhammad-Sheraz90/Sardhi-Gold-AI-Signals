@@ -6,7 +6,8 @@ from config import SYMBOL, TIMEFRAME
 def get_gold_data():
     try:
         # یاہو فنانس کا تیز ترین لنک (بغیر کسی اے پی آئی کی کے)
-        url = f"https://yahoo.com{SYMBOL}?interval={TIMEFRAME}&range=1d"
+        url = "https://yahoo.com"
+
         
         # یہ ہیڈر ویب سائٹ کو بتاتا ہے کہ یہ ایک نارمل موبائل/کمپیوٹر براؤزر ہے
         headers = {
