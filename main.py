@@ -18,7 +18,7 @@ SWING_LOOKBACK = 5
 RR = 2.0
 
 print("Sardhi Gold AI Bot Started...")
-send_signal("🚀 *Sardhi Gold AI Bot: Connection Test Successful!*")
+
 
 # ==========================================================
 # ٹیلی گرام الرٹ فنکشن
@@ -182,6 +182,7 @@ def check_signal(data):
 # مین رننگ لوپ (Main Execution Loop)
 # ==========================================================
 last_processed_time = None
+send_signal("🚀 *Sardhi Gold AI Bot: Connection Test Successful!*")
 
 while True:
     try:
