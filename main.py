@@ -158,7 +158,7 @@ while True:
 
         time.sleep(30)  # ہر 30 سیکنڈ بعد کینڈل اپڈیٹ چیک کرے گا
 
-except Exception as e:
+    except Exception as e:
         print("An error occurred:")
         traceback.print_exc()
         time.sleep(30)
