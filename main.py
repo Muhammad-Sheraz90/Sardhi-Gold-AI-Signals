@@ -7,7 +7,8 @@ from datetime import datetime
 
 # --- کنفیگریشن (Configuration) ---
 BOT_TOKEN = "8725455662:AAFbNrhovW6Mh_gT0JA9E2nFJxj2BCTUX-8"
-CHAT_ID = "YOUR_CHAT_ID" 7358356587
+CHAT_ID = "7358356587"
+
 
 SYMBOL = "XAU/USD"
 INTERVAL = "5min"
