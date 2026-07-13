@@ -9,7 +9,7 @@ from datetime import datetime
 # --- کنفیگریشن (Configuration) ---
 # اگر آپ کلاؤڈ پر چلا رہے ہیں تو Environment Variables استعمال کریں، ورنہ نیچے براہ راست اپنی آئی ڈیز لکھ دیں
 BOT_TOKEN = "8725455662:AAFbNrhovW6Mh_gT0JA9E2nFJxj2BCTUX-8"
-CHAT_ID = "یہاں_اپنی_چیٹ_آئی_ڈی_لکھیں"
+CHAT_ID = "7358356587"
 
 TWELVEDATA_API_KEY = os.getenv("TWELVEDATA_API_KEY", "YOUR_TWELVEDATA_API_KEY")
 
