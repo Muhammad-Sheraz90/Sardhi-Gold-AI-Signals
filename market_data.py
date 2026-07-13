@@ -1,47 +1,48 @@
 import requests
 import pandas as pd
-from config import TWELVEDATA_API_KEY
-
-SYMBOL = "XAU/USD"
-INTERVAL = "5min"
-
+from datetime import datetime
+from config import SYMBOL, TIMEFRAME
 
 def get_gold_data():
-
-    url = (
-        "https://api.twelvedata.com/time_series"
-        f"?symbol={SYMBOL}"
-        f"&interval={INTERVAL}"
-        "&outputsize=500"
-        "&format=JSON"
-        "&timezone=UTC"
-        f"&apikey={TWELVEDATA_API_KEY}"
-    )
-
-    response = requests.get(url, timeout=30)
-    data = response.json()
-
-    if "values" not in data:
-        raise Exception(data)
-
-    df = pd.DataFrame(data["values"])
-
-    df = df.rename(
-        columns={
-            "datetime": "datetime",
-            "open": "open",
-            "high": "high",
-            "low": "low",
-            "close": "close",
-            "volume": "volume",
+    try:
+        # یاہو فنانس کا تیز ترین لنک (بغیر کسی اے پی آئی کی کے)
+        url = f"https://yahoo.com{SYMBOL}?interval={TIMEFRAME}&range=1d"
+        
+        # یہ ہیڈر ویب سائٹ کو بتاتا ہے کہ یہ ایک نارمل موبائل/کمپیوٹر براؤزر ہے
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
-    )
-
-    df["datetime"] = pd.to_datetime(df["datetime"])
-
-    for col in ["open", "high", "low", "close"]:
-        df[col] = df[col].astype(float)
-
-    df = df.sort_values("datetime").reset_index(drop=True)
-
-    return df
+        
+        response = requests.get(url, headers=headers, timeout=15)
+        
+        if response.status_code != 200:
+            raise Exception(f"Yahoo Server responded with Status {response.status_code}")
+            
+        json_data = response.json()
+        result = json_data["chart"]["result"][0]
+        
+        # ڈیٹا نکالنا اور ترتیب دینا
+        timestamps = result["timestamp"]
+        indicators = result["indicators"]["quote"][0]
+        
+        df = pd.DataFrame({
+            "datetime": timestamps,
+            "open": indicators["open"],
+            "high": indicators["high"],
+            "low": indicators["low"],
+            "close": indicators["close"],
+            "volume": indicators["volume"]
+        })
+        
+        # خالی لائنیں صاف کرنا اور ٹائم فارمیٹ درست کرنا
+        df = df.dropna().reset_index(drop=True)
+        df['datetime'] = pd.to_datetime(df['datetime'], unit='s')
+        
+        # ڈیٹا ٹائپس درست کرنا
+        for col in ["open", "high", "low", "close"]:
+            df[col] = df[col].astype(float)
+            
+        return df
+        
+    except Exception as e:
+        raise Exception(f"Anti-Block Market Data Error: {e}")
