@@ -8,8 +8,9 @@ from datetime import datetime
 
 # --- کنفیگریشن (Configuration) ---
 # اگر آپ کلاؤڈ پر چلا رہے ہیں تو Environment Variables استعمال کریں، ورنہ نیچے براہ راست اپنی آئی ڈیز لکھ دیں
-BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID", "YOUR_TELEGRAM_CHAT_ID")
+BOT_TOKEN = "8725455662:AAFbNrhovW6Mh_gT0JA9E2nFJxj2BCTUX-8"
+CHAT_ID = "یہاں_اپنی_چیٹ_آئی_ڈی_لکھیں"
+
 TWELVEDATA_API_KEY = os.getenv("TWELVEDATA_API_KEY", "YOUR_TWELVEDATA_API_KEY")
 
 SYMBOL = "XAU/USD"
