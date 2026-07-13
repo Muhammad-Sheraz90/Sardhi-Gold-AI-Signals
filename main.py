@@ -33,12 +33,18 @@ def send_signal(message):
     except Exception as e:
         print(f"Telegram Error: {e}")
 
+
 # ==========================================================
-# مارکیٹ ڈیٹا حاصل کرنا
+# مارکیٹ ڈیٹا حاصل کرنا (محفوظ اور اپڈیٹڈ طریقہ)
 # ==========================================================
 def get_gold_data():
-    # TwelveData API Key
+    # یہاں آپ اپنی TwelveData کی API Key براہ راست بھی لکھ سکتے ہیں
     api_key = os.getenv("TWELVEDATA_API_KEY", "YOUR_TWELVEDATA_API_KEY")
+    
+    # اگر آپ کے پاس بار بار ایرر آئے تو آپ یہ مفت پبلک کی (Public Key) بھی استعمال کر سکتے ہیں: "demo"
+    if api_key == "YOUR_TWELVEDATA_API_KEY" or not api_key:
+        api_key = "demo" # عارضی ٹیسٹ کے لیے ڈیمو کی
+
     url = (
         "https://twelvedata.com"
         f"?symbol={SYMBOL}"
@@ -48,11 +54,22 @@ def get_gold_data():
         "&timezone=UTC"
         f"&apikey={api_key}"
     )
+    
     response = requests.get(url, timeout=30)
-    data = response.json()
+    
+    # چیک کریں کہ ویب سائٹ نے صحیح جواب دیا ہے یا نہیں
+    if response.status_code != 200:
+        raise Exception(f"TwelveData Server Error: Status Code {response.status_code}")
+        
+    try:
+        data = response.json()
+    except Exception:
+        raise Exception(f"API Returned Invalid Data or Blocked IP. Response text: {response.text[:100]}")
 
     if "values" not in data:
-        raise Exception(f"API Error: {data}")
+        # اگر کی خراب ہو تو ٹیلی گرام پر الرٹ بھیجیں
+        send_signal(f"⚠️ *TwelveData API Warning:*\n{data.get('message', 'Invalid API Key or Limit Exceeded.')}")
+        raise Exception(f"API Error Message: {data}")
 
     df = pd.DataFrame(data["values"])
     df = df.rename(columns={"datetime": "datetime"})
@@ -63,6 +80,7 @@ def get_gold_data():
 
     df = df.sort_values("datetime").reset_index(drop=True)
     return df
+
 
 # ==========================================================
 # انڈیکیٹرز کا حساب (EMA & RSI)
