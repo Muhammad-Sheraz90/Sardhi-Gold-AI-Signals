@@ -3,20 +3,20 @@ import time
 import traceback
 import requests
 import pandas as pd
+import yfinance as yf
 from datetime import datetime
 
 # --- کنفیگریشن (Configuration) ---
-BOT_TOKEN = "8725455662:AAFbNrhovW6Mh_gT0JA9E2nFJxj2BCTUX-8"
-CHAT_ID = "7358356587"
+CHAT_ID = "7358356587"  # آپ کی درست چیٹ آئی ڈی
 
-
-SYMBOL = "XAU/USD"
-INTERVAL = "5min"
+# یاہو فنانس پر گولڈ کا ٹکر GC=F ہوتا ہے
+SYMBOL = "GC=F"
+INTERVAL = "5m"    # 5 منٹ کی کینڈل
 EMA_FAST = 9       # تیز موونگ ایوریج
 EMA_SLOW = 21      # آہستہ موونگ ایوریج
 RSI_PERIOD = 14    # آر ایس آئی پیریڈ
 
-print("Sardhi Gold AI Bot (Fast Mode) Started...")
+print("Sardhi Gold AI Bot (Yahoo Finance Mode) Started...")
 
 # ==========================================================
 # ٹیلی گرام الرٹ فنکشن
@@ -33,54 +33,36 @@ def send_signal(message):
     except Exception as e:
         print(f"Telegram Error: {e}")
 
-
 # ==========================================================
-# مارکیٹ ڈیٹا حاصل کرنا (محفوظ اور اپڈیٹڈ طریقہ)
+# یاہو فنانس سے لائیو گولڈ ڈیٹا حاصل کرنا (نو بلاک طریقہ)
 # ==========================================================
 def get_gold_data():
-    # یہاں آپ اپنی TwelveData کی API Key براہ راست بھی لکھ سکتے ہیں
-    api_key = os.getenv("TWELVEDATA_API_KEY", "YOUR_TWELVEDATA_API_KEY")
-    
-    # اگر آپ کے پاس بار بار ایرر آئے تو آپ یہ مفت پبلک کی (Public Key) بھی استعمال کر سکتے ہیں: "demo"
-    if api_key == "YOUR_TWELVEDATA_API_KEY" or not api_key:
-        api_key = "demo" # عارضی ٹیسٹ کے لیے ڈیمو کی
-
-    url = (
-        "https://twelvedata.com"
-        f"?symbol={SYMBOL}"
-        f"&interval={INTERVAL}"
-        "&outputsize=100"
-        "&format=JSON"
-        "&timezone=UTC"
-        f"&apikey={api_key}"
-    )
-    
-    response = requests.get(url, timeout=30)
-    
-    # چیک کریں کہ ویب سائٹ نے صحیح جواب دیا ہے یا نہیں
-    if response.status_code != 200:
-        raise Exception(f"TwelveData Server Error: Status Code {response.status_code}")
-        
     try:
-        data = response.json()
-    except Exception:
-        raise Exception(f"API Returned Invalid Data or Blocked IP. Response text: {response.text[:100]}")
-
-    if "values" not in data:
-        # اگر کی خراب ہو تو ٹیلی گرام پر الرٹ بھیجیں
-        send_signal(f"⚠️ *TwelveData API Warning:*\n{data.get('message', 'Invalid API Key or Limit Exceeded.')}")
-        raise Exception(f"API Error Message: {data}")
-
-    df = pd.DataFrame(data["values"])
-    df = df.rename(columns={"datetime": "datetime"})
-    df["datetime"] = pd.to_datetime(df["datetime"])
-
-    for col in ["open", "high", "low", "close"]:
-        df[col] = df[col].astype(float)
-
-    df = df.sort_values("datetime").reset_index(drop=True)
-    return df
-
+        # یاہو فنانس سے گولڈ کا ڈیٹا ڈاؤن لوڈ کرنا
+        ticker = yf.Ticker(SYMBOL)
+        df = ticker.history(period="1d", interval=INTERVAL)
+        
+        if df.empty:
+            raise Exception("Yahoo Finance returned empty data.")
+            
+        # کالمز کے نام چھوٹے حروف میں تبدیل کرنا تاکہ باقی کوڈ چل سکے
+        df = df.reset_index()
+        df = df.rename(columns={
+            "Datetime": "datetime", 
+            "Open": "open", 
+            "High": "high", 
+            "Low": "low", 
+            "Close": "close", 
+            "Volume": "volume"
+        })
+        
+        # ڈیٹا ٹائپ درست کرنا
+        for col in ["open", "high", "low", "close"]:
+            df[col] = df[col].astype(float)
+            
+        return df
+    except Exception as e:
+        raise Exception(f"Yahoo Finance Error: {e}")
 
 # ==========================================================
 # انڈیکیٹرز کا حساب (EMA & RSI)
@@ -113,17 +95,17 @@ def check_signal(data):
     last = df.iloc[-2]
     prev = df.iloc[-3]
     
-    # بائی (BUY) کی شرط: فاسٹ ایوریج نے سلو ایوریج کو نیچے سے اوپر کراس کیا ہو
+    # بائی (BUY) کی شرط
     is_buy = (prev['ema_fast'] <= prev['ema_slow']) and (last['ema_fast'] > last['ema_slow'])
     
-    # سیل (SELL) کی شرط: فاسٹ ایوریج نے سلو ایوریج کو اوپر سے نیچے کراس کیا ہو
+    # سیل (SELL) کی شرط
     is_sell = (prev['ema_fast'] >= prev['ema_slow']) and (last['ema_fast'] < last['ema_slow'])
     
     entry = round(last["close"], 2)
     
     if is_buy:
         sl = round(entry - 2.50, 2)  # $2.50 کا فکسڈ سٹاپ لاس
-        tp = round(entry + 5.00, 2)  # $5.00 کا ٹیک پرافٹ (1:2 ریسک ریوارڈ)
+        tp = round(entry + 5.00, 2)  # $5.00 کا ٹیک پرافٹ
         return {"signal": "BUY 📈", "entry": entry, "sl": sl, "tp": tp, "rsi": round(last['rsi'], 2)}
         
     elif is_sell:
@@ -139,11 +121,11 @@ def check_signal(data):
 last_processed_time = None
 
 # جیسے ہی سرور آن ہوگا، یہ کنکشن ٹیسٹ میسج چینل پر بھیج دے گا
-send_signal("🚀 *Sardhi Gold AI Bot: Fast Mode Activated!* \n\nScanning XAUUSD on 5-Minute Chart...")
+send_signal("🚀 *Sardhi Gold AI Bot: Yahoo Finance Mode Activated!* \n\nScanning XAUUSD without API restrictions...")
 
 while True:
     try:
-        print("Getting market data...")
+        print("Getting market data from Yahoo Finance...")
         data = get_gold_data()
         
         if not data.empty:
