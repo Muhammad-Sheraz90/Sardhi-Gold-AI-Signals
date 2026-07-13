@@ -3,20 +3,17 @@ import time
 import traceback
 import requests
 import pandas as pd
-import yfinance as yf
 from datetime import datetime
 
 # --- کنفیگریشن (Configuration) ---
 CHAT_ID = "7358356587"  # آپ کی درست چیٹ آئی ڈی
 
-# یاہو فنانس پر گولڈ کا ٹکر GC=F ہوتا ہے
-SYMBOL = "GC=F"
-INTERVAL = "5m"    # 5 منٹ کی کینڈل
-EMA_FAST = 9       # تیز موونگ ایوریج
-EMA_SLOW = 21      # آہستہ موونگ ایوریج
-RSI_PERIOD = 14    # آر ایس آئی پیریڈ
+# انڈیکیٹرز کی سیٹنگز
+EMA_FAST = 9       
+EMA_SLOW = 21      
+RSI_PERIOD = 14    
 
-print("Sardhi Gold AI Bot (Yahoo Finance Mode) Started...")
+print("Sardhi Gold AI Bot (Cloud-Safe Forex Mode) Started...")
 
 # ==========================================================
 # ٹیلی گرام الرٹ فنکشن
@@ -34,26 +31,29 @@ def send_signal(message):
         print(f"Telegram Error: {e}")
 
 # ==========================================================
-# یاہو فنانس سے لائیو گولڈ ڈیٹا حاصل کرنا (نو بلاک طریقہ)
+# کلاؤڈ محفوظ طریقہ سے لائیو گولڈ ڈیٹا حاصل کرنا
 # ==========================================================
 def get_gold_data():
     try:
-        # یاہو فنانس سے گولڈ کا ڈیٹا ڈاؤن لوڈ کرنا
-        ticker = yf.Ticker(SYMBOL)
-        df = ticker.history(period="1d", interval=INTERVAL)
+        # ہم ایک اوپن سورس فنانشل ڈیٹا فیڈ استعمال کر رہے ہیں جو کلاؤڈ سرورز کو بلاک نہیں کرتی
+        url = "https://cryptocompare.com"
+        response = requests.get(url, timeout=15)
+        res_data = response.json()
         
-        if df.empty:
-            raise Exception("Yahoo Finance returned empty data.")
+        if res_data.get("Response") != "Success":
+            raise Exception(f"API Error: {res_data.get('Message')}")
             
-        # کالمز کے نام چھوٹے حروف میں تبدیل کرنا تاکہ باقی کوڈ چل سکے
-        df = df.reset_index()
+        data_list = res_data["Data"]["Data"]
+        df = pd.DataFrame(data_list)
+        
+        # کالمز کو بوٹ کے مطابق ایڈجسٹ کرنا
+        df['datetime'] = pd.to_datetime(df['time'], unit='s')
         df = df.rename(columns={
-            "Datetime": "datetime", 
-            "Open": "open", 
-            "High": "high", 
-            "Low": "low", 
-            "Close": "close", 
-            "Volume": "volume"
+            "open": "open", 
+            "high": "high", 
+            "low": "low", 
+            "close": "close", 
+            "volumeto": "volume"
         })
         
         # ڈیٹا ٹائپ درست کرنا
@@ -62,7 +62,7 @@ def get_gold_data():
             
         return df
     except Exception as e:
-        raise Exception(f"Yahoo Finance Error: {e}")
+        raise Exception(f"Data Fetch Error: {e}")
 
 # ==========================================================
 # انڈیکیٹرز کا حساب (EMA & RSI)
@@ -104,8 +104,8 @@ def check_signal(data):
     entry = round(last["close"], 2)
     
     if is_buy:
-        sl = round(entry - 2.50, 2)  # $2.50 کا فکسڈ سٹاپ لاس
-        tp = round(entry + 5.00, 2)  # $5.00 کا ٹیک پرافٹ
+        sl = round(entry - 2.50, 2)  
+        tp = round(entry + 5.00, 2)  
         return {"signal": "BUY 📈", "entry": entry, "sl": sl, "tp": tp, "rsi": round(last['rsi'], 2)}
         
     elif is_sell:
@@ -121,11 +121,11 @@ def check_signal(data):
 last_processed_time = None
 
 # جیسے ہی سرور آن ہوگا، یہ کنکشن ٹیسٹ میسج چینل پر بھیج دے گا
-send_signal("🚀 *Sardhi Gold AI Bot: Yahoo Finance Mode Activated!* \n\nScanning XAUUSD without API restrictions...")
+send_signal("🚀 *Sardhi Gold AI Bot: Cloud-Safe Mode Activated!* \n\nScanning XAUUSD without data blocks...")
 
 while True:
     try:
-        print("Getting market data from Yahoo Finance...")
+        print("Getting market data from Cloud-Safe Feed...")
         data = get_gold_data()
         
         if not data.empty:
@@ -154,9 +154,9 @@ while True:
                 
                 last_processed_time = current_candle_time
             else:
-                print("Candle already analyzed. Waiting for next 5m candle...")
+                print("Candle already analyzed. Waiting for next interval...")
 
-        time.sleep(30)  # ہر 30 سیکنڈ بعد کینڈل اپڈیٹ چیک کرے گا
+        time.sleep(60)  # ہر 60 سیکنڈ بعد کینڈل اپڈیٹ چیک کرے گا
 
     except Exception as e:
         print("An error occurred:")
