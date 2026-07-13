@@ -1,44 +1,34 @@
-import requests
+import yfinance as yf
 import pandas as pd
-from datetime import datetime
+import requests
 
 def get_gold_data():
     try:
-        # کلاؤڈ محفوظ پبلک اے پی آئی جو گولڈ (XAU/USD) کا لائیو کینڈل ڈیٹا دیتی ہے
-        url = "https://coingecko.com"
+        # یاہو فنانس سے کنکشن بنانے کے لیے ایک کسٹم ہیڈر سیشن تیار کرنا
+        session = requests.Session()
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        })
         
-        headers = {
-            "accept": "application/json",
-            "User-Agent": "Mozilla/5.0"
-        }
+        # یاہو فنانس پر لائیو گولڈ کا ٹکر GC=F ہے
+        ticker = yf.Ticker("GC=F", session=session)
         
-        response = requests.get(url, headers=headers, timeout=15)
+        # 1 دن کا ڈیٹا 5 منٹ کی کینڈلز کے ساتھ ڈاؤن لوڈ کرنا
+        df = ticker.history(period="1d", interval="5m", timeout=15)
         
-        if response.status_code != 200:
-            # اگر Coingecko پر کوئی مسئلہ ہو تو متبادل اوپن سورس فید استعمال کریں
-            url = "https://cryptocompare.com"
-            response = requests.get(url, timeout=15)
-            res_data = response.json()
-            data_list = res_data["Data"]["Data"]
-            df = pd.DataFrame(data_list)
-            df['datetime'] = pd.to_datetime(df['time'], unit='s')
-            df = df.rename(columns={"open": "open", "high": "high", "low": "low", "close": "close", "volumeto": "volume"})
-        else:
-            # اگر مین اے پی آئی کامیابی سے چل جائے
-            json_data = response.json()
-            prices = json_data["prices"]  # اس میں [timestamp, price] ہوتا ہے
+        if df.empty:
+            raise Exception("Yahoo Finance returned an empty dataframe on this cloud IP.")
             
-            df = pd.DataFrame(prices, columns=["timestamp", "close"])
-            df['datetime'] = pd.to_datetime(df['timestamp'], unit='ms')
-            
-            # ای ایم اے اسٹریٹیجی کے لیے باقی کالمز فرضی لائیو قیمت کے برابر کرنا
-            df["open"] = df["close"]
-            df["high"] = df["close"]
-            df["low"] = df["close"]
-            df["volume"] = 1000
-            
-        # ڈیٹا صاف کرنا
-        df = df.dropna().reset_index(drop=True)
+        # کالمز کے نام چھوٹے حروف میں تبدیل کرنا تاکہ اسٹریٹیجی فائل چل سکے
+        df = df.reset_index()
+        df = df.rename(columns={
+            "Datetime": "datetime", 
+            "Open": "open", 
+            "High": "high", 
+            "Low": "low", 
+            "Close": "close", 
+            "Volume": "volume"
+        })
         
         # ڈیٹا ٹائپ درست کرنا
         for col in ["open", "high", "low", "close"]:
@@ -47,4 +37,4 @@ def get_gold_data():
         return df
         
     except Exception as e:
-        raise Exception(f"Secure Cloud Data Feed Error: {e}")
+        raise Exception(f"Yahoo Cloud Bypass Error: {e}")
