@@ -1,12 +1,11 @@
 import os
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
-TWELVEDATA_API_KEY = os.getenv("TWELVEDATA_API_KEY")
-print("BOT_TOKEN:", BOT_TOKEN)
-print("CHAT_ID:", CHAT_ID)
-SYMBOL = "XAUUSD"
-TIMEFRAME = "5m"
+# --- ٹیلی گرام کنفیگریشن ---
+BOT_TOKEN = "8725455662:AAFbNrhovW6Mh_gT0JA9E2nFJxj2BCTUX-8"
+CHAT_ID = "7358356587"
 
-RISK_PERCENT = 1
-MIN_CONFIDENCE = 80
+# --- مارکیٹ ڈیٹا کنفیگریشن ---
+SYMBOL = "GC=F"       # یاہو فنانس کے لیے گولڈ کا درست ٹکر
+TIMEFRAME = "5m"      # 5 منٹ کا ٹائم فریم
+
+print("Config loaded with secure direct endpoints.")
