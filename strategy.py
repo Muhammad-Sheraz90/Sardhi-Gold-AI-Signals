@@ -1,303 +1,86 @@
-# ==========================================================
-# Sardhi Gold AI V3
-# ICT Strategy
-# ==========================================================
-
 import pandas as pd
 import numpy as np
 
-
-SWING_LOOKBACK = 5
-RR = 2.0
-
-
-def detect_swings(data):
-
-    data = data.copy()
-
-    data["SwingHigh"] = np.nan
-    data["SwingLow"] = np.nan
-
-    for i in range(SWING_LOOKBACK, len(data) - SWING_LOOKBACK):
-
-        if data["high"].iloc[i] == max(
-            data["high"].iloc[i-SWING_LOOKBACK:i+SWING_LOOKBACK+1]
-        ):
-            data.loc[data.index[i], "SwingHigh"] = data["high"].iloc[i]
-
-        if data["low"].iloc[i] == min(
-            data["low"].iloc[i-SWING_LOOKBACK:i+SWING_LOOKBACK+1]
-        ):
-            data.loc[data.index[i], "SwingLow"] = data["low"].iloc[i]
-
-    data["SwingHigh"] = data["SwingHigh"].ffill()
-    data["SwingLow"] = data["SwingLow"].ffill()
-
-    return data
-# ==========================================================
-# LIQUIDITY SWEEP (ICT)
-# ==========================================================
-
-def detect_liquidity(data):
-
-    data = data.copy()
-
-    data["BuyLiquidity"] = False
-    data["SellLiquidity"] = False
-
-    for i in range(10, len(data)):
-
-        swing_high = data["high"].iloc[i-10:i].max()
-        swing_low = data["low"].iloc[i-10:i].min()
-
-        high = data["high"].iloc[i]
-        low = data["low"].iloc[i]
-        close = data["close"].iloc[i]
-
-        # BUY SIDE LIQUIDITY SWEEP
-        if high > swing_high and close < swing_high:
-            data.loc[data.index[i], "BuyLiquidity"] = True
-
-        # SELL SIDE LIQUIDITY SWEEP
-        if low < swing_low and close > swing_low:
-            data.loc[data.index[i], "SellLiquidity"] = True
-
-    return data
-
-
-
-
-def detect_choch(data):
-
-    data["BullishCHOCH"] = False
-    data["BearishCHOCH"] = False
-
-    for i in range(1, len(data)):
-
-        if data["close"].iloc[i] > data["high"].iloc[i-1]:
-            data.loc[data.index[i], "BullishCHOCH"] = True
-
-        if data["close"].iloc[i] < data["low"].iloc[i-1]:
-            data.loc[data.index[i], "BearishCHOCH"] = True
-
-    return data
-
-
-# ==========================================================
-# FAIR VALUE GAP (ICT)
-# ==========================================================
-
-def detect_fvg(data):
-
-    data = data.copy()
-
-    data["BullishFVG"] = False
-    data["BearishFVG"] = False
-
-    data["FVGHigh"] = np.nan
-    data["FVGLow"] = np.nan
-
-    for i in range(2, len(data)):
-
-        high_2 = data["high"].iloc[i-2]
-        low_2 = data["low"].iloc[i-2]
-
-        high = data["high"].iloc[i]
-        low = data["low"].iloc[i]
-
-        # Bullish FVG
-        if low > high_2:
-
-            gap = low - high_2
-
-            if gap > 0.02:
-
-                data.loc[data.index[i], "BullishFVG"] = True
-                data.loc[data.index[i], "FVGLow"] = high_2
-                data.loc[data.index[i], "FVGHigh"] = low
-
-        # Bearish FVG
-        elif high < low_2:
-
-            gap = low_2 - high
-
-            if gap > 0.02:
-
-                data.loc[data.index[i], "BearishFVG"] = True
-                data.loc[data.index[i], "FVGHigh"] = low_2
-                data.loc[data.index[i], "FVGLow"] = high
-
-    return data
-    # ==========================================================
-# PREPARE ICT
-# ==========================================================
-
-def prepare_ict(data):
-
-    data = detect_swings(data)
-    data = detect_liquidity(data)
-    data = detect_choch(data)
-    data = detect_fvg(data)
-
-    return data
-
-
-# ==========================================================
-# BUY SETUP
-# ==========================================================
-
-def buy_setup(last):
-
-    return (
-        last["SellLiquidity"]
-        and
-        last["BullishCHOCH"]
-        
-        
-    )
-
-
-# ==========================================================
-# SELL SETUP
-# ==========================================================
-
-def sell_setup(last):
-
-    return (
-        last["BuyLiquidity"]
-        and
-        last["BearishCHOCH"]
-        
-        
-    )
-
-
-# ==========================================================
-# STOP LOSS
-# ==========================================================
-
-def stop_loss(last, signal):
-
-    if signal == "BUY":
-        return round(last["low"], 2)
-
-    return round(last["high"], 2)
-
-
-# ==========================================================
-# TAKE PROFIT
-# ==========================================================
-
-def take_profit(entry, sl, signal):
-
-    risk = abs(entry - sl)
-
-    if signal == "BUY":
-        tp = entry + (risk * RR)
-
-    else:
-        tp = entry - (risk * RR)
-
-    return round(tp, 2)
-
-
-# ==========================================================
-# CREATE SIGNAL
-# ==========================================================
-
-def create_signal(last, signal):
-
-    entry = round(last["close"], 2)
-
-    sl = stop_loss(last, signal)
-
-    tp = take_profit(entry, sl, signal)
-
-    return {
-
-        "signal": signal,
-
-        "entry": entry,
-
-        "sl": sl,
-
-        "tp": tp
-
-    }
-    # ==========================================================
-# CHECK SIGNAL
-# ==========================================================
+# انڈیکیٹرز کی سیٹنگز
+EMA_FAST = 9       
+EMA_SLOW = 21      
+RSI_PERIOD = 14    
+
+def calculate_indicators(df):
+    df = df.copy()
+    
+    # EMA (Moving Average) کا حساب
+    df['ema_fast'] = df['close'].ewm(span=EMA_FAST, adjust=False).mean()
+    df['ema_slow'] = df['close'].ewm(span=EMA_SLOW, adjust=False).mean()
+    
+    # RSI (Relative Strength Index) کا حساب
+    delta = df['close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=RSI_PERIOD).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=RSI_PERIOD).mean()
+    rs = gain / loss
+    df['rsi'] = 100 - (100 / (1 + rs))
+    
+    return df
 
 def check_signal(data):
-
-    if data is None:
+    if data is None or len(data) < 30:
         return None
 
-    if len(data) < 50:
-        return None
-
-    data = prepare_ict(data)
-
-    signal = None
-
-    for i in range(max(0, len(data) - 20), len(data) - 1):
-
-        last = data.iloc[i]
-        print("--------------")
-        print("Index:", i)
-        print("BuyLiquidity:", last["BuyLiquidity"])
-        print("SellLiquidity:", last["SellLiquidity"])
-        print("BullishCHOCH:", last["BullishCHOCH"])
-        print("BearishCHOCH:", last["BearishCHOCH"])
-        print("BullishFVG:", last["BullishFVG"])
-        print("BearishFVG:", last["BearishFVG"])
-
-        if last["SellLiquidity"] and last["BullishCHOCH"]:
-            signal = create_signal(last, "BUY")
-
-        elif last["BuyLiquidity"] and last["BearishCHOCH"]:
-            signal = create_signal(last, "SELL")
-
-        if signal:
-            return signal
-
+    df = calculate_indicators(data)
+    
+    # لائیو کینڈل سے پچھلی مکمل ہونے والی کینڈل چیک کریں (Index -2)
+    last = df.iloc[-2]
+    prev = df.iloc[-3]
+    
+    # بائی (BUY) کی شرط: فاسٹ موونگ ایوریج نے سلو موونگ ایوریج کو نیچے سے اوپر کراس کیا ہو
+    is_buy = (prev['ema_fast'] <= prev['ema_slow']) and (last['ema_fast'] > last['ema_slow'])
+    
+    # سیل (SELL) کی شرط: فاسٹ موونگ ایوریج نے سلو موونگ ایوریج کو اوپر سے نیچے کراس کیا ہو
+    is_sell = (prev['ema_fast'] >= prev['ema_slow']) and (last['ema_fast'] < last['ema_slow'])
+    
+    entry = round(last["close"], 2)
+    rsi_val = round(last['rsi'], 2)
+    
+    if is_buy:
+        sl = round(entry - 2.50, 2)  # $2.50 کا سٹاپ لاس
+        tp = round(entry + 5.00, 2)  # $5.00 کا ٹیک پرافٹ
+        return {
+            "signal": "BUY 📈",
+            "entry": entry,
+            "sl": sl,
+            "tp": tp,
+            "rsi": rsi_val
+        }
+        
+    elif is_sell:
+        sl = round(entry + 2.50, 2)
+        tp = round(entry - 5.00, 2)
+        return {
+            "signal": "SELL 📉",
+            "entry": entry,
+            "sl": sl,
+            "tp": tp,
+            "rsi": rsi_val
+        }
+        
     return None
 
-# ==========================================================
-# TELEGRAM MESSAGE
-# ==========================================================
-
 def format_signal(signal):
-
     if signal is None:
         return None
 
-    message = f"""
-🟢 Sardhi Gold AI V3
+    # ٹیلی گرام کے لیے خوبصورت اردو/انگریزی مکس میسج ڈیزائن
+    message = f"""🔔 *NEW GOLD (XAUUSD) SIGNAL*
 
-Signal : {signal['signal']}
+📊 *Type:* {signal['signal']}
+🎯 *Entry:* ${signal['entry']}
+🛑 *Stop Loss:* ${signal['sl']}
+🎯 *Take Profit:* ${signal['tp']}
+📈 *RSI Strength:* {signal['rsi']}
+⏰ *Timeframe:* 5 Min
 
-Entry : {signal['entry']}
-
-Stop Loss : {signal['sl']}
-
-Take Profit : {signal['tp']}
-
-Strategy :
-ICT Liquidity Sweep
-+
-CHOCH
-+
-FVG
-"""
-
+⚠️ *Educational purposes only.*"""
     return message
 
-
-# ==========================================================
-# TEST
-# ==========================================================
-
 if __name__ == "__main__":
-
-    print("ICT Strategy Loaded Successfully")
+    print("Fast EMA & RSI Strategy Loaded Successfully")
