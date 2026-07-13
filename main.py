@@ -27,7 +27,8 @@ print("Sardhi Gold AI Bot Started...")
 def send_signal(message):
     # ٹوکن کو صاف کرنا تاکہ کوئی فالتو لفظ یا اسپیس نہ رہے
     clean_token = str(BOT_TOKEN).strip()
-    url = f"https://telegram.org{clean_token}/sendMessage"
+    url = "https://telegram.org"
+    
     payload = {"chat_id": CHAT_ID, "text": message, "parse_mode": "Markdown"}
     try:
         response = requests.post(url, json=payload, timeout=10)
