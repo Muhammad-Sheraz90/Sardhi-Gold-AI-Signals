@@ -21,10 +21,12 @@ print("Sardhi Gold AI Bot Started...")
 
 
 # ==========================================================
-# ٹیلی گرام الرٹ فنکشن
+# ٹیلی گرام الرٹ
 # ==========================================================
 def send_signal(message):
-    url = f"https://telegram.org{BOT_TOKEN}/sendMessage"
+    # ٹوکن کو صاف کرنا تاکہ کوئی فالتو لفظ یا اسپیس نہ رہے
+    clean_token = str(BOT_TOKEN).strip()
+    url = f"https://telegram.org{clean_token}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": message, "parse_mode": "Markdown"}
     try:
         response = requests.post(url, json=payload, timeout=10)
@@ -34,6 +36,7 @@ def send_signal(message):
             print(f"Failed to send Telegram message: {response.text}")
     except Exception as e:
         print(f"Telegram Error: {e}")
+
 
 # ==========================================================
 # مارکیٹ ڈیٹا حاصل کرنا
